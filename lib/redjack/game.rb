@@ -12,13 +12,101 @@ module Redjack
     attr_accessor :bets
     
     def initialize(args={})
-      self.seed = args.fetch(:seed)
       self.bets = args.fetch(:bets)
-      self.amount_decks = args.fetch(:amount_decks, 1)
       self.balance = args.fetch(:balance, 0)
+      raise ArgumentError.new("not enough balance to start game") if balance < bets.sum
+      
+      self.seed = args.fetch(:seed, rand(100_000_000))
+      self.amount_decks = args.fetch(:amount_decks, 1)
       self.actions = []
       prepare
       load_actions(args.delete(:actions) || [])
+    end
+    
+    def in_play
+      players.sum(&:amount)
+    end
+
+    def start_balance
+      balance + players.sum(&:amount)
+    end
+
+    def ending_balance
+      raise "game not finished" unless finished?
+      balance + players.sum(&:ending_balance)
+    end
+
+    def current_player
+      players.detect(&:playing?)
+    end
+
+    def possible_actions
+      current_player&.possible_actions
+    end
+
+    def american_rules?
+      false
+    end
+
+    def hit!
+      execute_action(:hit!) if current_player&.can_hit?
+    end
+
+    def stand!
+      execute_action(:stand!) if current_player&.can_stand?
+    end
+
+    def double!
+      execute_action(:double!) if current_player&.can_double? 
+    end
+    
+    def split!
+      execute_action(:split!) if current_player&.can_split?
+    end
+
+    def finished?
+      finished
+    end
+
+    def all_players_finished?
+      players.all?(&:finished?)
+    end
+    
+    def reindex_players!
+      players.each_with_index {|player, index| player.position = index}
+    end
+
+    private 
+
+    def load_action(action)
+      send(action)
+    end
+
+    def give_out_cards
+      players.each(&:take_card!)
+      dealer.take_card!
+      players.each(&:take_card!)      
+    end
+
+    def execute_action(method)
+      current_player.send(method)
+      self.actions << method
+      autoplay_if_neccessary!
+    end
+
+    def finish!
+      self.finished = true
+    end
+
+    def load_actions(actions)
+      actions.compact.each do |action|
+        load_action(action)
+      end
+    end
+    
+    def autoplay_if_neccessary!
+      hit! if current_player&.must_hit?
+      dealer.play! if all_players_finished?
     end
 
     def prepare
@@ -33,84 +121,6 @@ module Redjack
       self.players = bets.collect{ |amount| Player.new(self, amount) }
       self.dealer = Dealer.new(self)
       reindex_players!
-    end
-
-    def reindex_players!
-      players.each_with_index {|player, index| player.position = index}
-    end
-    
-    def load_actions(actions)
-      actions.compact.each do |action|
-        load_action(action)
-      end
-    end
-
-    def current_player
-      players.detect(&:playing?)
-    end
-
-    def possible_actions
-      current_player&.possible_actions
-    end
-
-    def load_action(action)
-      send(action)
-    end
-
-    def give_out_cards
-      players.each(&:take_card!)
-      dealer.take_card!
-      players.each(&:take_card!)      
-    end
-
-    def american_rules?
-      false
-    end
-
-    def hit!
-      if current_player&.hit!
-        self.actions << :hit!
-        hit! if current_player&.must_hit?
-        true
-      end
-    end
-
-    def stand!
-      if current_player&.stand!
-        self.actions << :stand!
-        hit! if current_player&.must_hit?
-        dealer.play! if all_players_finished?
-        true
-      end
-    end
-
-    def double!
-      if current_player&.double!
-        self.actions << :double!
-        hit! if current_player&.must_hit?
-        dealer.play! if all_players_finished?
-        true
-      end
-    end
-    
-    def split!
-      if current_player.split!
-        self.actions << :split!
-        hit! if current_player&.must_hit?
-        true
-      end
-    end
-
-    def finish!
-      self.finished = true
-    end
-
-    def finished?
-      finished
-    end
-
-    def all_players_finished?
-      players.all?(&:finished?)
     end
 
   end

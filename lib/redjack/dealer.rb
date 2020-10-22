@@ -35,7 +35,7 @@ module Redjack
 
     def finish!
       super
-      game.finish!
+      game.send(:finish!) #only the dealer can finish the game, it's private method
     end
 
     def play!

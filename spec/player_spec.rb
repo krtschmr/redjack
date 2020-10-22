@@ -1,9 +1,9 @@
 RSpec.describe Redjack::Player do
 
-  let(:game) { Redjack::Game.new(seed: 1234, balance: 100, bets: [100]) }
+  let(:game) { Redjack::Game.new(seed: 1234, balance: 500, bets: [100]) }
   let(:player) { game.current_player }
 
-  let(:bj_game) { Redjack::Game.new(seed: 8, balance: 100, bets: [100]) } # 10, Q, A. so player gets a BJ
+  let(:bj_game) { Redjack::Game.new(seed: 8, balance: 300, bets: [100]) } # 10, Q, A. so player gets a BJ
   let(:bj_player) { bj_game.players.first }
 
   describe "with a just started game" do 
@@ -165,7 +165,7 @@ RSpec.describe Redjack::Player do
     end
 
     it "can't hit if all previous players haven't finished" do 
-      game = Redjack::Game.new(seed: 1234, bets: [100,100])
+      game = Redjack::Game.new(seed: 1234, bets: [100,100], balance: 200)
       last_player = game.players.last
       expect { last_player.hit! }.to raise_error("waiting for previous player to finish")      
       game.players.first.stand!
@@ -267,13 +267,11 @@ RSpec.describe Redjack::Player do
 
     it "creates a new hand with the same amount" do 
       player.cards = [card(5), card(5)]
-      player.amount = 50
-      assert_difference("game.balance" => -50, "player.amount" => 0)  do 
+      assert_difference("game.balance" => -100, "player.amount" => 0, "game.players.count"=>+1)  do 
         player.split!
       end      
-      expect(game.players.all?{|player| player.amount == 50}).to be true
+      expect(game.players.all?{|player| player.amount == 100}).to be true
     end
-
   end
 
   describe "doubling" do 
@@ -302,16 +300,15 @@ RSpec.describe Redjack::Player do
     end
 
     it "deducted the double from the balance" do 
+      # game was 500 balance. -100 to start and another -100 for double should be 300 left
       player.cards = [card(5), card(5)]
-      player.amount = 50
       player.double!
-      expect(game.balance).to eq(50)
+      expect(game.balance).to eq(300)
     end
 
     it "doubles the amount of the hand and deducts it from the game" do 
       player.cards = [card(5), card(5)]
-      player.amount = 50
-      assert_difference("game.balance" => -50, "player.amount" => +50)  do 
+      assert_difference("game.balance" => -100, "player.amount" => +100)  do 
         player.double!
       end      
     end

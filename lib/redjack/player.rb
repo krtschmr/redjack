@@ -13,9 +13,7 @@ module Redjack
       self.finished = false
       self.amount = amount
       self.splitted = options.fetch(:splitted, false)
-      if splitted?
-        game.balance -= amount
-      end
+      game.balance -= amount
     end
 
     # :nocov:
@@ -90,6 +88,20 @@ module Redjack
       game.balance >= amount
     end
 
+    def ending_balance
+      raise "game not finished" unless game.finished?
+      case status
+      when :blackjack
+        amount + amount*1.5
+      when :win
+        amount + amount
+      when :push 
+        amount
+      else
+        0
+      end
+    end
+
     def result
     end
 
@@ -148,7 +160,9 @@ module Redjack
       game.balance -= amount
       self.amount += amount
       hit! 
-      stand! unless finished?
+      if !finished?
+        stand!
+      end
     end
 
     def split!
@@ -171,7 +185,7 @@ module Redjack
       return :blackjack if won_with_blackjack?
       return :waiting_for_dealer unless game.dealer.finished?
       return :push if points == game.dealer.points
-      return :win if points > game.dealer.points || game.dealer.busted?
+      return :win if !busted? && points > game.dealer.points || game.dealer.busted?
       :lose
     end
     # :nocov:
