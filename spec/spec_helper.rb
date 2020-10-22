@@ -10,7 +10,7 @@ end
 
 require 'codecov'
 
-if ENV["coverage"]
+if ENV["COVERAGE"]
   SimpleCov.formatter = SimpleCov::Formatter::Codecov
 end
 

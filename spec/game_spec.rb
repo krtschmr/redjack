@@ -46,6 +46,15 @@ RSpec.describe Redjack::Game do
 		end
 	end
 
+	describe "preload actions" do 
+		it "stand! was executed and the game is finished" do 
+			game = Redjack::Game.new(seed: 203, balance: 500, bets: [100], actions: [:stand!])
+			expect(game.players.first).to be_finished
+			expect(game.actions).to eq([:stand!])
+			expect(game).to be_finished
+		end
+	end
+
 	describe "ending_balance" do 
 
 		it "lost 100" do 

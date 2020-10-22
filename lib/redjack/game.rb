@@ -44,10 +44,6 @@ module Redjack
       current_player&.possible_actions
     end
 
-    def american_rules?
-      false
-    end
-
     def hit!
       execute_action(:hit!) if current_player&.can_hit?
     end
