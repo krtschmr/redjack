@@ -36,6 +36,14 @@ module Redjack
       points # do we need this?
     end
 
+    def his_turn?
+      game.current_player == self
+    end
+
+    def waiting?
+      !finished && !his_turn?
+    end
+
     def playing?
       !finished?
     end
@@ -146,9 +154,9 @@ module Redjack
 
     def possible_actions
       candidates = []
-      candidates << :split! if can_split?
-      candidates << :double! if can_double?
       if can_hit?
+        candidates << :split! if can_split?
+        candidates << :double! if can_double?      
         candidates << :hit! 
         candidates << :stand!
       end
@@ -180,7 +188,8 @@ module Redjack
 
     # :nocov:
     def status
-      return :playing if playing?
+      return :playing if his_turn?
+      return :waiting if waiting?      
       return :busted if busted?
       return :blackjack if won_with_blackjack?
       return :waiting_for_dealer unless game.dealer.finished?
