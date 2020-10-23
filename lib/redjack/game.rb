@@ -82,6 +82,7 @@ module Redjack
       players.each(&:take_card!)
       dealer.take_card!
       players.each(&:take_card!)      
+      autoplay_if_neccessary!
     end
 
     def execute_action(method)
