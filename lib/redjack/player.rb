@@ -114,7 +114,7 @@ module Redjack
     end
 
     def take_card!
-      raise "must hit! instead of taking a card" if cards.count >= 2
+      raise "must hit! instead of taking a card" if cards.count >= 2 && !must_hit?
       # the initial card round
       self.cards << game.deck.draw
       finish!  if blackjack?

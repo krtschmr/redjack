@@ -187,7 +187,6 @@ RSpec.describe Redjack::Player do
     end
     
     it "can't stand if he has a Blackjack as he already is finished" do 
-
       expect(bj_player).to be_blackjack
       expect(bj_player).to be_finished
       expect(bj_player).to_not be_can_stand

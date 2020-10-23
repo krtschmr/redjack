@@ -102,16 +102,14 @@ module Redjack
     end
     
     def autoplay_if_neccessary!
-      hit! if current_player&.must_hit?
+      current_player.take_card! if current_player&.must_hit?
       dealer.play! if all_players_finished?
     end
 
     def prepare
       self.deck = Deck.new(amount_decks, seed)
       initialize_players
-      give_out_cards    
-      # one special case: all players have a BJ, then it's dealers turn
-      dealer.play! if all_players_finished?  
+      give_out_cards          
     end
 
     def initialize_players
