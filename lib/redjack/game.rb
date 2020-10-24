@@ -36,6 +36,10 @@ module Redjack
       balance + players.sum(&:ending_balance)
     end
 
+    def profit
+      ending_balance - start_balance
+    end
+
     def current_player
       players.detect(&:playing?)
     end
