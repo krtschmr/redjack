@@ -106,7 +106,7 @@ module Redjack
     end
     
     def autoplay_if_neccessary!
-      current_player.take_card! if current_player&.must_hit?
+      current_player.take_card! while current_player&.must_hit?
       dealer.play! if all_players_finished?
     end
 

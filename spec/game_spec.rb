@@ -7,6 +7,16 @@ RSpec.describe Redjack::Game do
 		
 	end
 
+	describe "should not throw a bug anymore" do 
+		it "case1" do 
+			# player one has a 5 2 and then auto hits a 3. he should also hit another card automatically as he can't bust
+			# the next card would be a 7 for a total of 17
+			game = Redjack::Game.new(seed: 70110878557887557551041208286687180, balance: 1000, bets: [20,20], ) #actions: [:split!, :stand!, :stand!])
+			expect(game.players[0].cards.count).to eq(4)
+			expect(game.players[0].points).to eq(17)
+			
+		end
+	end
 
 	describe "balance" do 
 

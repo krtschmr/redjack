@@ -57,7 +57,7 @@ module Redjack
     end
 
     def must_hit?
-      cards.count == 1 || points <= 8 && !can_split?
+      !can_split? && !can_double? && points < 11
     end
 
     def blackjack?
